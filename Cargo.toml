@@ -1,0 +1,13 @@
+[package]
+name = "he"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+itertools = "0.5.9"
+rayon = "1.5.3"
+
+[profile.release]
+opt-level = 3
