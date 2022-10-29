@@ -263,7 +263,7 @@ fn two_bit_check(rels: &Vec<Vec<Crel>>, quads: & Vec<Vec<Quad>>,
 fn search(rels: &Vec<Vec<Crel>>, comp: & CompatibleRels, quads: & Vec<Vec<Quad>>,
           f: &mut Vec<i8>, hs: &mut Vec<usize>, count: &mut i64) -> () {
     match (1..=N-5).find(|j| get_u(f,*j).iter().any(|x| *x == 0)) {
-        None => if one_bit_check(rels,quads,f,hs) // && two_bit_check(rels,quads,f,hs)
+        None => if one_bit_check(rels,quads,f,hs) && two_bit_check(rels,quads,f,hs)
                 { *count = *count + 1 },
         Some(j) => {
             let com = comp.get(&get_u(f,j-1)).unwrap();
