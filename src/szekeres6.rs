@@ -255,6 +255,29 @@ fn two_bit_check(rels: &Vec<Vec<Crel>>, quads: & Vec<Vec<Quad>>,
     return true;
 }
 
+fn three_bit_check(rels: &Vec<Vec<Crel>>, quads: & Vec<Vec<Quad>>,
+                   f: &mut Vec<i8>, hs: &mut Vec<usize>) -> bool {
+    let k = hs.len();
+    for a in 0..N*(N-1)*(N-2)/6 {
+        for b in a+1..N*(N-1)*(N-2)/6 {
+            't: for c in b+1..N*(N-1)*(N-2)/6 {
+                if f[a] == 0 && f[b] == 0 && f[c] == 0 {
+                    for (fa,fb,fc) in [(1_i8,1_i8,1_i8),(1,1,-1),(1,-1,1),(1,-1,-1),
+                                       (-1,1,1),(-1,1,-1),(-1,-1,1),(-1,-1,-1)].iter() {
+                        hs.push(a); hs.push(b); hs.push(c);
+                        f[a] = *fa; f[b] = *fb; f[c] = *fc;
+                        let b = add(rels,quads,f,hs,&vec![a,b,c]);
+                        restore(f,hs,k);
+                        if b { continue 't; }
+                    }
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 // It attempts to assign every triplet involved in some u_j without satisfying none
 // of the convex relations, and all of the geometric ones.
 // It performs other types of checks if it assigned all triplets involved in
@@ -263,7 +286,7 @@ fn two_bit_check(rels: &Vec<Vec<Crel>>, quads: & Vec<Vec<Quad>>,
 fn search(rels: &Vec<Vec<Crel>>, comp: & CompatibleRels, quads: & Vec<Vec<Quad>>,
           f: &mut Vec<i8>, hs: &mut Vec<usize>, count: &mut i64) -> () {
     match (1..=N-5).find(|j| get_u(f,*j).iter().any(|x| *x == 0)) {
-        None => if one_bit_check(rels,quads,f,hs) && two_bit_check(rels,quads,f,hs)
+        None => if one_bit_check(rels,quads,f,hs) && two_bit_check(rels,quads,f,hs) && three_bit_check(rels,quads,f,hs)
                 { *count = *count + 1 },
         Some(j) => {
             let com = comp.get(&get_u(f,j-1)).unwrap();
@@ -298,7 +321,7 @@ pub fn main() {
     let convexr = convex_rels6();
     let quads = quadrilaterals();
     //let to_run: Vec<i32> = omega.iter().filter(|v| v[0] == 1).map(|v| assignment_idx(v)).collect();
-    let to_run: Vec<i32> = vec![524288,524303,524343,524351,524415,524927,525183,525311,525375,525439,525951,527360,528383,531456,531472,531474,531510,531568,531570,531574,531582,531583,532094,532095,532350,532478,532479,564224,564240,564242,564274,564336,564338,564848,564850,564858,564863,565114,565246,565247,580608,581631,588800,588848,588912,589424,589680,589688,589808,589823,786432,786447,786463,786959,786975,787039,787295,787455,787456,787472,787474,787487,787999,788063,788095,820059,820063,820095,820223,820224,820240,820242,820754,820755,820763,820827,820831,820863,821083,821087,821119,821247,824320,824336,824338,824832,824848,824850,824914,824922,824923,825179,825183,825215,825343,826368,826384,826386,826898,840704,841216,841232,841296,841552,841563,841567,841599,841727,843280,843344,843376,843600,850944,851456,851472,851536,851792,851952,851967,918527,950784,950787,950795,950799,951051,967169,967425,967433,972288,972544,972608,974336,974592,974656,982016,982528,982784,982848,983040,983041,983047,983055,983567,983823,983887,983951,984063,1015808,1015809,1015811,1016320,1016321,1016323,1016331,1016587,1016651,1016719,1016831,1032192,1032193,1032704,1032705,1032961,1032969,1040384,1040385,1040897,1041153,1041161,1041225,1041281,1041289,1041353,1047552,1048064,1048320,1048384,1048448,1048512];
+    let to_run: Vec<i32> = vec![983055,983040,1015809,820242,825179];
     omega.par_iter().for_each(|v| if to_run.iter().any(|i| assignment_idx(v) == *i)
                               {try_assignment(&convexr,&comp,&quads,v)});
 }
