@@ -98,7 +98,7 @@ fn concave6() -> Vec<Vec<i8>> {
 
 // By viewing each element in omega as a binary number (1's are 1's, -1's are 0's)
 // one can identify each one of them by a number which we call its index.
-fn assignment_idx(v: &Vec<i8>) -> i32 {
+fn signature_idx(v: &Vec<i8>) -> i32 {
     return (0..v.len()).map(|i| match v[v.len()-i-1] {1 => 2_i32.pow(i as u32), _ => 0}).sum()
 }
 
@@ -303,7 +303,7 @@ fn search(rels: &Vec<Vec<Crel>>, comp: & CompatibleRels, quads: & Vec<Vec<Quad>>
     }
 }
 
-fn try_assignment(rels: &Vec<Vec<Crel>>, comp: & CompatibleRels, quads: & Vec<Vec<Quad>>, v: &Vec<i8>) {
+fn try_signature(rels: &Vec<Vec<Crel>>, comp: & CompatibleRels, quads: & Vec<Vec<Quad>>, v: &Vec<i8>) {
     let mut count: i64 = 0;
     let mut f: Vec<i8> = vec![0;N*(N-1)*(N-2)/6];
     let mut history: Vec<usize> = Vec::new();
@@ -311,7 +311,7 @@ fn try_assignment(rels: &Vec<Vec<Crel>>, comp: & CompatibleRels, quads: & Vec<Ve
     let b = set_u(rels,quads,&mut f,&mut history,1,v);
     if b { search(rels,comp,quads,&mut f,&mut history,&mut count); }
     let elapsed_time = now.elapsed();
-    println!("idx: {}  n: {}  t: {}  v: {:?}",assignment_idx(v),count,elapsed_time.as_secs() as f32/60.0,*v);
+    println!("idx: {}  n: {}  t: {}  v: {:?}",signature_idx(v),count,elapsed_time.as_secs() as f32/60.0,*v);
 }
 
 pub fn main() {
@@ -320,8 +320,7 @@ pub fn main() {
     let comp = compatible(& omega);
     let convexr = convex_rels6();
     let quads = quadrilaterals();
-    //let to_run: Vec<i32> = omega.iter().filter(|v| v[0] == 1).map(|v| assignment_idx(v)).collect();
-    let to_run: Vec<i32> = vec![983055,983040,1015809,820242,825179];
-    omega.par_iter().for_each(|v| if to_run.iter().any(|i| assignment_idx(v) == *i)
-                              {try_assignment(&convexr,&comp,&quads,v)});
+    let to_run: Vec<i32> = omega.iter().filter(|v| v[0] == 1).map(|v| signature_idx(v)).collect();
+    omega.par_iter().for_each(|v| if to_run.iter().any(|i| signature_idx(v) == *i)
+                              {try_signature(&convexr,&comp,&quads,v)});
 }
